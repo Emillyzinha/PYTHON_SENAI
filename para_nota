@@ -1,0 +1,123 @@
+# pedir os dados, verificar se o cpf está cadastrado e negar cadastro caso esteja.
+# percorrer o txt e printar o cpf
+# colocar senha e criptografar
+
+import bcrypt
+
+
+class Cadastros:
+    def __init__(self):
+        self.nome = ''
+        self.cpf = ''
+        self.nascimento = ''
+        self.senha = ''
+        self.senha_criptografada = ''
+        self.dicionario_usuarios = {}
+
+    def menu(self):
+        print('\n ------------- MENU -------------')
+        print('Escolha uma opção abaixo: \n'
+              '[1] - Cadastrar\n'
+              '[2] - Verificar usuário')
+        opcao = int(input(''))
+        if opcao == 1:
+            self.input_cadastros()
+        if opcao == 2:
+            self.verificar_usuarios()
+        else:
+            pass
+
+    def input_cadastros(self):
+        print(' --------------- CADASTRO --------------- ')
+        while True:
+            with open('banco.txt', 'a') as arquivo:
+                self.nome = input('\nNome: ')
+                while not self.nome.isalpha():
+                    self.nome = input('Nome: ')
+
+                self.cpf = input('CPF: ')
+                while self.cpf.isspace() or self.cpf.isalpha():
+                    self.cpf = input('CPF: ')
+                if len(self.cpf) == 11 or len(self.cpf) == 14:
+                    pass
+                else:
+                    while not len(self.cpf) == 11 or len(self.cpf) == 14:
+                        self.cpf = input('Digite o CPF com todos os números, por favor: ')
+
+                self.nascimento = input('Data de nascimento: ')
+                while self.nascimento.isspace() or self.nascimento.isalpha():
+                    self.nascimento = input('Data de nascimento: ')
+
+                if self.verificacao_existencia_cpf(self.cpf):
+                    print('Você já tem cadastro.')
+                else:
+                    self.senha = input('Digite uma senha: ')
+                    self.senha_criptografada = bcrypt.hashpw(self.senha.encode('utf8'), bcrypt.gensalt())
+
+                    if bcrypt.hashpw(self.senha.encode('utf8'), self.senha_criptografada) == self.senha_criptografada:
+                        arquivo.write(self.nome + ',' + self.cpf + ',' + self.nascimento + ',' + str(
+                            self.senha_criptografada) + '\n')
+
+                        self.dicionario_usuarios = {
+                            'Nome': self.nome,
+                            'CPF': self.cpf,
+                            'Data de Nascimento': self.nascimento
+                        }
+
+                        usuarios = open('usuarios.txt', 'a')
+                        usuarios.write(str(self.dicionario_usuarios) + '\n')
+                        print(self.dicionario_usuarios)
+                        usuarios.close()
+
+                        print('Cadastro realizado')
+
+                    else:
+                        print('Cadastro não realizado, por favor, tente novamente')
+
+            arquivo.close()
+            self.menu()
+
+    def verificacao_existencia_cpf(self, teste_cpf):
+        with open('banco.txt') as arquivo:
+            leitura_arquivos = arquivo.readlines()
+            for i in leitura_arquivos:
+                index_lista = leitura_arquivos.index(i)
+                if teste_cpf in leitura_arquivos[index_lista]:
+                    return True
+                else:
+                    return False
+        arquivo.close()
+
+    def verificar_usuarios(self):
+        with open('usuarios.txt') as arquivo:
+            leitura_arquivos = arquivo.readlines()
+            print(len(leitura_arquivos))
+            print(type(leitura_arquivos))
+
+            lista = []
+
+            for i in leitura_arquivos:
+                lista.append(eval(i))
+
+            print(type(lista))
+            print(lista)
+
+            # for i in lista:
+            #     print('Nome:', i['Nome'])
+            #     print(f'CPF:', i['CPF'])
+            #     print(f'Data de nascimento:', i['Data de Nascimento'])
+
+            for index, valor in enumerate(lista):
+                print("Teste")
+                print(valor['CPF'])
+                print('Nome', valor['Nome'])
+                print(f'CPF', valor['CPF'])
+                print(f'Data de nascimento:', valor['Data de Nascimento'])
+
+
+        self.menu()
+
+
+if __name__ == '__main__':
+    cadastros = Cadastros()
+    cadastros.menu()
